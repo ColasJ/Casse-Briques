@@ -1,0 +1,412 @@
+[33mcommit fa49240cf3fc7bbcb33a76ca26ab5e7a72ce6bf4[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m)[m
+Author: ColasJ <janssen.colas@gmail.com>
+Date:   Mon Jun 10 11:20:24 2024 +0200
+
+    Première version très basique du casse-briques. Modifier trajectoires, initialisation des briques et textures
+
+[1mdiff --git a/Main.py b/Main.py[m
+[1mnew file mode 100644[m
+[1mindex 0000000..af7ffc1[m
+[1m--- /dev/null[m
+[1m+++ b/Main.py[m
+[36m@@ -0,0 +1,152 @@[m
+[32m+[m[32mimport pygame[m
+[32m+[m[32mimport sys[m
+[32m+[m[32mfrom balle import Balle[m
+[32m+[m[32mfrom brique import Brique[m
+[32m+[m[32mfrom raquette import Raquette[m
+[32m+[m[32mfrom jeu import Jeu[m
+[32m+[m[32mfrom bordure import Bordure[m
+[32m+[m[32mfrom bouton import Bouton, BoutonRecommencer, BoutonQuitter[m
+[32m+[m
+[32m+[m
+[32m+[m[32m# Initialisation de Pygame[m
+[32m+[m[32mpygame.init()[m
+[32m+[m[32mpolice = pygame.font.SysFont(None, 36)[m
+[32m+[m[32mpolice_fin = pygame.font.SysFont(None, 100)[m
+[32m+[m
+[32m+[m[32m# Taille de la fenêtre[m
+[32m+[m[32mLARGEUR = 1200[m
+[32m+[m[32mHAUTEUR = 800[m
+[32m+[m[32mFPS = 60[m
+[32m+[m
+[32m+[m[32m# Couleurs[m
+[32m+[m[32mNOIR = (0, 0, 0)[m
+[32m+[m[32mBLANC = (255, 255, 255)[m
+[32m+[m[32mROUGE = (255, 0, 0)[m
+[32m+[m[32mVERT = (0, 255, 0)[m
+[32m+[m[32mBLEU = (0, 0, 255)[m
+[32m+[m[32mJAUNE = (255, 255, 0)[m
+[32m+[m[32mCYAN = (0, 255, 255)[m
+[32m+[m[32mMAGENTA = (255, 0, 255)[m
+[32m+[m[32mGRIS = (128, 128, 128)[m
+[32m+[m
+[32m+[m[32m# Informations générales du jeu[m
+[32m+[m[32mNOMBRE_VIES_INITIALES = 5[m
+[32m+[m[32mjeu = Jeu(NOMBRE_VIES_INITIALES)[m
+[32m+[m
+[32m+[m[32m#Balle[m
+[32m+[m[32mBALLE_POSITION_INITIALE = (200, 500)[m
+[32m+[m[32mDIRECTION = pygame.math.Vector2(1, 1).normalize()[m
+[32m+[m[32mVITESSE_BALLE = 12[m
+[32m+[m[32mballe = Balle(BALLE_POSITION_INITIALE[0], BALLE_POSITION_INITIALE[1], 5, ROUGE, DIRECTION, 0, LARGEUR, HAUTEUR)[m
+[32m+[m
+[32m+[m[32m# Raquette[m
+[32m+[m[32mRAQUETTE_POSITION_INITIALE = (400, HAUTEUR - 50)[m
+[32m+[m[32mRAQUETTE_LARGEUR_INITIALE = 100[m
+[32m+[m[32mRAQUETTE_EPAISSEUR_INITIALE = 10[m
+[32m+[m[32mraquette = Raquette(RAQUETTE_POSITION_INITIALE[0], RAQUETTE_POSITION_INITIALE[1], RAQUETTE_LARGEUR_INITIALE, RAQUETTE_EPAISSEUR_INITIALE, BLANC)[m
+[32m+[m
+[32m+[m[32m# Génération des briques (un seul niveau simple pour le moment)[m
+[32m+[m[32mLARGEUR_BRIQUE_0 = 58[m
+[32m+[m[32mHAUTEUR_BRIQUE_0 = 20[m
+[32m+[m[32mensemble_briques = pygame.sprite.Group()[m
+[32m+[m[32mALIGNEMENT_GAUCHE = 250[m
+[32m+[m[32mALIGNEMENT_HAUT = 150[m
+[32m+[m
+[32m+[m[32mfor i in range(10) :[m
+[32m+[m[32m    for j in range(5) :[m
+[32m+[m[32m        brique = Brique(ALIGNEMENT_GAUCHE + (i * 60), ALIGNEMENT_HAUT + (j * 30), LARGEUR_BRIQUE_0, HAUTEUR_BRIQUE_0, 1)[m
+[32m+[m[32m        ensemble_briques.add(brique)[m
+[32m+[m
+[32m+[m
+[32m+[m[32m# Touches enfoncées ou non[m
+[32m+[m[32mtouche_gauche_enfoncee = False[m
+[32m+[m[32mtouche_droite_enfoncee = False[m
+[32m+[m
+[32m+[m[32m# Création de la fenêtre[m
+[32m+[m[32mfenetre = pygame.display.set_mode((LARGEUR, HAUTEUR))[m
+[32m+[m[32mpygame.display.set_caption("Casse-Brique")[m
+[32m+[m[32mclock = pygame.time.Clock()[m
+[32m+[m
+[32m+[m[32m# Gestions des boutons (pour recommencer par exemple)[m
+[32m+[m[32mboutons = [][m
+[32m+[m
+[32m+[m[32m# Pour lancer la balle[m
+[32m+[m[32mdebut = True[m
+[32m+[m
+[32m+[m[32m# Boucle principale du jeu[m
+[32m+[m[32mrunning = True[m
+[32m+[m[32mwhile running:[m
+[32m+[m[32m    # Gestion des événements[m
+[32m+[m[32m    for event in pygame.event.get():[m
+[32m+[m[32m        if event.type == pygame.QUIT:[m
+[32m+[m[32m            running = False[m
+[32m+[m[32m        elif event.type == pygame.KEYDOWN: # On appuie sur une touche[m
+[32m+[m[32m            if debut :[m
+[32m+[m[32m                debut = False[m
+[32m+[m[32m                balle.vitesse = VITESSE_BALLE[m
+[32m+[m[32m            if event.key == pygame.K_LEFT:[m
+[32m+[m[32m                touche_gauche_enfoncee = True[m
+[32m+[m[32m            elif event.key == pygame.K_RIGHT:[m
+[32m+[m[32m                touche_droite_enfoncee = True[m
+[32m+[m[32m        elif event.type == pygame.KEYUP:[m
+[32m+[m[32m            if event.key == pygame.K_LEFT:[m
+[32m+[m[32m                touche_gauche_enfoncee = False[m
+[32m+[m[32m            elif event.key == pygame.K_RIGHT:[m
+[32m+[m[32m                touche_droite_enfoncee = False[m
+[32m+[m[32m        elif event.type == pygame.MOUSEBUTTONDOWN:[m
+[32m+[m[32m            if event.button == 1:  # Clic gauche de la souris[m
+[32m+[m[32m                for bouton in boutons:[m
+[32m+[m[32m                    if bouton.rect.collidepoint(event.pos):[m
+[32m+[m[32m                        bouton.action()[m
+[32m+[m[41m                    [m
+[32m+[m
+[32m+[m[32m    # Traiter les touches enfoncées[m
+[32m+[m[32m    raquette.bougerRaquette(touche_gauche_enfoncee, touche_droite_enfoncee, LARGEUR)[m
+[32m+[m
+[32m+[m[32m    # On regarde si ça touche une brique ou la raquette[m
+[32m+[m[32m    for brique in ensemble_briques:[m
+[32m+[m[32m        if balle.rect.colliderect(brique.rect):[m
+[32m+[m[32m            if balle.rect.left <= brique.rect.right and balle.rect.right >= brique.rect.left:[m
+[32m+[m[32m                balle.direction.y *= -1[m[41m  [m
+[32m+[m[32m            else:[m
+[32m+[m[32m                balle.direction.x *= -1[m[41m  [m
+[32m+[m[32m            brique.touche()[m
+[32m+[m[32m            brique.couleur()[m
+[32m+[m[32m            if brique.detruit():[m
+[32m+[m[32m                ensemble_briques.remove(brique)[m
+[32m+[m
+[32m+[m
+[32m+[m
+[32m+[m[32m #       if ensemble_briques.empty:[m
+[32m+[m[32m #           jeu.niveauSuivant()[m
+[32m+[m
+[32m+[m[32m    if balle.rect.colliderect(raquette.raquette):[m
+[32m+[m[32m        balle.direction = raquette.rebondRaquette(balle)[m
+[32m+[m
+[32m+[m[32m    # Bouger la balle[m
+[32m+[m[32m    balle.deplacement()[m
+[32m+[m
+[32m+[m[32m    # Effacer l'écran avec la couleur de fond[m
+[32m+[m[32m    fenetre.fill(NOIR)[m
+[32m+[m
+[32m+[m[32m    # Gèrer la sortie de terrain[m
+[32m+[m[32m#    if balle.y > HAUTEUR :[m
+[32m+[m[32m#        if jeu.perdsVie:[m
+[32m+[m[32m#            boutons.add(BoutonRecommencer(200, 400))[m
+[32m+[m[32m#            boutons.add(BoutonQuitter(200, 800))[m
+[32m+[m
+[32m+[m
+[32m+[m[32m    # Afficher les bordures, la raquette et la balle[m
+[32m+[m[32m    raquette.afficher(fenetre)[m
+[32m+[m[32m    balle.afficher(fenetre)[m
+[32m+[m
+[32m+[m[32m    # Afficher les briques[m
+[32m+[m[32m    ensemble_briques.draw(fenetre)[m
+[32m+[m
+[32m+[m[32m    # Mettre à jour l'affichage[m
+[32m+[m[32m    pygame.display.flip()[m
+[32m+[m[32m    clock.tick(FPS)[m
+[32m+[m
+[32m+[m[32m# Quitter Pygame[m
+[32m+[m[32mpygame.quit()[m
+[32m+[m[32msys.exit()[m
+\ No newline at end of file[m
+[1mdiff --git a/__pycache__/balle.cpython-312.pyc b/__pycache__/balle.cpython-312.pyc[m
+[1mnew file mode 100644[m
+[1mindex 0000000..0ee5553[m
+Binary files /dev/null and b/__pycache__/balle.cpython-312.pyc differ
+[1mdiff --git a/__pycache__/bordure.cpython-312.pyc b/__pycache__/bordure.cpython-312.pyc[m
+[1mnew file mode 100644[m
+[1mindex 0000000..647a354[m
+Binary files /dev/null and b/__pycache__/bordure.cpython-312.pyc differ
+[1mdiff --git a/__pycache__/bouton.cpython-312.pyc b/__pycache__/bouton.cpython-312.pyc[m
+[1mnew file mode 100644[m
+[1mindex 0000000..99bf3f4[m
+Binary files /dev/null and b/__pycache__/bouton.cpython-312.pyc differ
+[1mdiff --git a/__pycache__/brique.cpython-312.pyc b/__pycache__/brique.cpython-312.pyc[m
+[1mnew file mode 100644[m
+[1mindex 0000000..7ab9b44[m
+Binary files /dev/null and b/__pycache__/brique.cpython-312.pyc differ
+[1mdiff --git a/__pycache__/jeu.cpython-312.pyc b/__pycache__/jeu.cpython-312.pyc[m
+[1mnew file mode 100644[m
+[1mindex 0000000..633087d[m
+Binary files /dev/null and b/__pycache__/jeu.cpython-312.pyc differ
+[1mdiff --git a/__pycache__/raquette.cpython-312.pyc b/__pycache__/raquette.cpython-312.pyc[m
+[1mnew file mode 100644[m
+[1mindex 0000000..b39e463[m
+Binary files /dev/null and b/__pycache__/raquette.cpython-312.pyc differ
+[1mdiff --git a/balle.py b/balle.py[m
+[1mnew file mode 100644[m
+[1mindex 0000000..1bf4c26[m
+[1m--- /dev/null[m
+[1m+++ b/balle.py[m
+[36m@@ -0,0 +1,35 @@[m
+[32m+[m[32mfrom brique import Brique[m
+[32m+[m[32mimport math[m
+[32m+[m[32mimport pygame[m
+[32m+[m
+[32m+[m[32mclass Balle (pygame.sprite.Sprite):[m
+[32m+[m[32m    def __init__(self, x, y, rayon, couleur, direction, vitesse, largeur, hauteur):[m
+[32m+[m[32m        super().__init__()[m
+[32m+[m[32m        self.x = x[m
+[32m+[m[32m        self.y = y[m
+[32m+[m[32m        self.image = pygame.Surface((rayon*2, rayon*2))[m
+[32m+[m[32m        self.rect = self.image.get_rect(center=(x, y))[m
+[32m+[m[32m        self.vitesse = vitesse[m
+[32m+[m[32m        self.couleur = couleur[m
+[32m+[m[32m        self.rayon = rayon[m
+[32m+[m[32m        self.direction = direction[m
+[32m+[m[32m        self.largeur_max = largeur[m
+[32m+[m[32m        self.hauteur_max = hauteur[m
+[32m+[m[32m        print (str(self.rect.center))[m
+[32m+[m
+[32m+[m[32m    def deplacement(self):[m
+[32m+[m[32m        if self.rect.left < 0 or self.rect.right > self.largeur_max:[m
+[32m+[m[32m            self.direction.x *= -1[m
+[32m+[m[32m        if self.rect.top < 0:[m
+[32m+[m[32m            self.direction.y *= -1[m
+[32m+[m[32m        if self.rect.bottom > self.hauteur_max :[m
+[32m+[m[32m            return True[m
+[32m+[m[41m        [m
+[32m+[m[32m        self.x += self.vitesse * self.direction[0][m
+[32m+[m[32m        self.y += self.vitesse * self.direction[1][m
+[32m+[m
+[32m+[m[32m        self.rect.center = (self.x, self.y)[m
+[32m+[m
+[32m+[m[41m        [m
+[32m+[m[32m    def afficher(self, fenetre):[m
+[32m+[m[32m        pygame.draw.circle(fenetre, self.couleur, (int(self.x), int(self.y)), self.rayon)[m
+\ No newline at end of file[m
+[1mdiff --git a/bordure.py b/bordure.py[m
+[1mnew file mode 100644[m
+[1mindex 0000000..fa7280e[m
+[1m--- /dev/null[m
+[1m+++ b/bordure.py[m
+[36m@@ -0,0 +1,14 @@[m
+[32m+[m[32mfrom typing import Any[m
+[32m+[m[32mimport pygame[m
+[32m+[m
+[32m+[m[32mclass Bordure :[m
+[32m+[m[32m    def __init__ (self, largeur : int, hauteur : int, epaisseur : int, couleur):[m
+[32m+[m[32m        self.haut = pygame.Rect(0, 0, largeur, epaisseur)[m
+[32m+[m[32m        self.gauche = pygame.Rect(0, 0, epaisseur, hauteur)[m
+[32m+[m[32m        self.droite = pygame.Rect(largeur-epaisseur, 0, epaisseur, hauteur)[m
+[32m+[m[32m        self.couleur = couleur[m
+[32m+[m
+[32m+[m[32m    def afficher(self, fenetre):[m
+[32m+[m[32m        pygame.draw.rect(fenetre, self.couleur, self.haut)[m
+[32m+[m[32m        pygame.draw.rect(fenetre, self.couleur, self.gauche)[m
+[32m+[m[32m        pygame.draw.rect(fenetre, self.couleur, self.droite)[m
+\ No newline at end of file[m
+[1mdiff --git a/bouton.py b/bouton.py[m
+[1mnew file mode 100644[m
+[1mindex 0000000..b6ffd3b[m
+[1m--- /dev/null[m
+[1m+++ b/bouton.py[m
+[36m@@ -0,0 +1,31 @@[m
+[32m+[m[32mimport pygame[m
+[32m+[m
+[32m+[m[32mclass Bouton:[m
+[32m+[m[32m    def __init__(self, x, y, largeur, hauteur, couleur, texte, police):[m
+[32m+[m[32m        self.rect = pygame.Rect(x, y, largeur, hauteur)[m
+[32m+[m[32m        self.couleur = couleur[m
+[32m+[m[32m        self.texte = texte[m
+[32m+[m[32m        self.police = pygame.font.SysFont(None, police)[m
+[32m+[m[32m        self.texte_surface = self.police.render(str(texte), True, (0, 0, 0))[m
+[32m+[m[32m        self.texte_rect = self.texte_surface.get_rect(center=self.rect.center)[m
+[32m+[m[41m    [m
+[32m+[m[32m    def dessiner(self, surface):[m
+[32m+[m[32m        pygame.draw.rect(surface, self.couleur, self.rect)[m
+[32m+[m
+[32m+[m[32m    def action(self):[m
+[32m+[m[32m        None[m
+[32m+[m
+[32m+[m[32mclass BoutonRecommencer (Bouton):[m
+[32m+[m[32m    def __init__(self, x, y):[m
+[32m+[m[32m        super().__init__(self, x, y, 200, 400, (255, 255, 255), "Recommencer", 36)[m
+[32m+[m
+[32m+[m[32m    def action(self):[m
+[32m+[m[32m        super().action[m
+[32m+[m
+[32m+[m[32mclass BoutonQuitter (Bouton):[m
+[32m+[m[32m    def __init__(self, x, y):[m
+[32m+[m[32m        super().__init__(self, x, y, 200, 400, (255, 255, 255), "Quitter", 36)[m
+[32m+[m
+[32m+[m[32m    def action(self):[m
+[32m+[m[32m        super().action[m
+[32m+[m[41m        [m
+\ No newline at end of file[m
+[1mdiff --git a/brique.py b/brique.py[m
+[1mnew file mode 100644[m
+[1mindex 0000000..63e87d1[m
+[1m--- /dev/null[m
+[1m+++ b/brique.py[m
+[36m@@ -0,0 +1,36 @@[m
+[32m+[m[32mimport pygame[m
+[32m+[m
+[32m+[m[32mNOIR = (0, 0, 0)[m
+[32m+[m[32mBLANC = (255, 255, 255)[m
+[32m+[m[32mROUGE = (255, 0, 0)[m
+[32m+[m[32mVERT = (0, 255, 0)[m
+[32m+[m[32mBLEU = (0, 0, 255)[m
+[32m+[m[32mJAUNE = (255, 255, 0)[m
+[32m+[m[32mCYAN = (0, 255, 255)[m
+[32m+[m[32mMAGENTA = (255, 0, 255)[m
+[32m+[m[32mGRIS = (128, 128, 128)[m
+[32m+[m
+[32m+[m[32mORDRE_COULEURS=[BLANC, VERT, BLEU, JAUNE, ROUGE][m
+[32m+[m
+[32m+[m
+[32m+[m
+[32m+[m[32mclass Brique(pygame.sprite.Sprite):[m
+[32m+[m[32m    def __init__(self, positionX, positionY, largeur, hauteur, nbVies):[m
+[32m+[m[32m        super().__init__()[m
+[32m+[m[32m        self.nbVies = nbVies[m
+[32m+[m[32m        self.image = pygame.Surface((largeur, hauteur))[m
+[32m+[m[32m        self.image.fill(ORDRE_COULEURS[nbVies + 1])[m
+[32m+[m[32m        self.rect = self.image.get_rect(topleft=(positionX, positionY))[m[41m [m
+[32m+[m[41m    [m
+[32m+[m[32m    def touche(self):[m
+[32m+[m[32m        self.nbVies -= 1[m
+[32m+[m
+[32m+[m[32m    def detruit(self):[m
+[32m+[m[32m        if self.nbVies <= 0:[m
+[32m+[m[32m            return True[m
+[32m+[m[41m        [m
+[32m+[m[32m    def couleur(self):[m
+[32m+[m[32m        self.image.fill(ORDRE_COULEURS[self.nbVies + 1])[m
+[32m+[m[41m    [m
+[32m+[m[32m    def afficher(self, fenetre):[m
+[32m+[m[32m        pygame.draw.rect(fenetre, self.couleur, self.rect)[m
+\ No newline at end of file[m
+[1mdiff --git a/jeu.py b/jeu.py[m
+[1mnew file mode 100644[m
+[1mindex 0000000..3513877[m
+[1m--- /dev/null[m
+[1m+++ b/jeu.py[m
+[36m@@ -0,0 +1,23 @@[m
+[32m+[m[32mimport pygame[m
+[32m+[m
+[32m+[m[32mclass Jeu :[m
+[32m+[m
+[32m+[m[32m    def __init__ (self, vies : int):[m
+[32m+[m[32m        self.vies = vies[m
+[32m+[m[32m        self.niveau = 0[m
+[32m+[m
+[32m+[m[32m    def levelUp (self):[m
+[32m+[m[32m        self.niveau += 1[m
+[32m+[m
+[32m+[m[32m    def perdsVie (self, fenetre):[m[41m [m
+[32m+[m[32m        self.vies -= 1[m[41m  [m
+[32m+[m[32m        if self.vies == 0:[m
+[32m+[m[32m            return True[m
+[32m+[m[32m        else:[m
+[32m+[m[32m            return False[m
+[32m+[m[41m [m
+[32m+[m[32m    def afficherVies (self, fenetre, police):[m[41m   [m
+[32m+[m[32m        fenetre.blit(police.render("Vies : " + str(self.vies), True, (255, 255, 255)), (10, 10))[m
+[32m+[m
+[32m+[m[32m    def afficherNiveau (self, fenetre, police):[m[41m   [m
+[32m+[m[32m        fenetre.blit(police.render("Niveau : " + str(self.niveau), True, (255, 255, 255)), (100, 10))[m
+\ No newline at end of file[m
+[1mdiff --git a/raquette.py b/raquette.py[m
+[1mnew file mode 100644[m
+[1mindex 0000000..660bbe2[m
+[1m--- /dev/null[m
+[1m+++ b/raquette.py[m
+[36m@@ -0,0 +1,42 @@[m
+[32m+[m[32mimport pygame[m
+[32m+[m[32mimport math[m
+[32m+[m[32mfrom bordure import Bordure[m
+[32m+[m
+[32m+[m[32mANGLE_MAX = 45[m
+[32m+[m
+[32m+[m[32mclass Raquette(pygame.sprite.Sprite):[m
+[32m+[m[32m    def __init__(self, x : int, y : int, largeur : int, epaisseur, couleur):[m
+[32m+[m[32m        super().__init__()[m
+[32m+[m[32m        self.largeur = largeur[m
+[32m+[m[32m        self.raquette = pygame.Rect(x, y, largeur, epaisseur)[m
+[32m+[m[32m        self.couleur = couleur[m
+[32m+[m[32m        self.vitesse = 10[m
+[32m+[m
+[32m+[m[32m    def setTaille (self, largeur):[m
+[32m+[m[32m        self.size = largeur[m
+[32m+[m
+[32m+[m[32m    def setVitesse (self, vitesse):[m
+[32m+[m[32m        self.vitesse = vitesse[m
+[32m+[m
+[32m+[m[32m    def rebondRaquette(self, balle):[m
+[32m+[m[32m        x_relatif = (balle.rect.centerx - self.raquette.left) - self.raquette.width / 2[m
+[32m+[m[32m        ratio = x_relatif / (self.raquette.width / 2)[m
+[32m+[m[32m        bounce_angle = ratio * ANGLE_MAX[m
+[32m+[m[32m        if bounce_angle < 20:[m
+[32m+[m[32m            bounce_angle = 20[m
+[32m+[m
+[32m+[m[32m        # Calculer la nouvelle direction de la ballee[m
+[32m+[m[32m        return pygame.math.Vector2(math.cos(math.radians(bounce_angle)), -math.sin(math.radians(bounce_angle))).normalize()[m
+[32m+[m[41m    [m
+[32m+[m[32m    # Deplacement de la raquette du joueur[m
+[32m+[m[32m    def bougerRaquette (self, gauche, droite, largeur_ecran) :[m
+[32m+[m[32m        if gauche:[m
+[32m+[m[32m            if not self.raquette.left <= 0:[m
+[32m+[m[32m                self.raquette.x -= self.vitesse[m
+[32m+[m[32m        elif droite:[m
+[32m+[m[32m            if not self.raquette.left >= largeur_ecran:[m
+[32m+[m[32m                self.raquette.x += self.vitesse[m
+[32m+[m[32m        return self[m
+[32m+[m
+[32m+[m[32m    def afficher(self, fenetre):[m
+[32m+[m[32m        pygame.draw.rect(fenetre, self.couleur, self.raquette)[m
+\ No newline at end of file[m

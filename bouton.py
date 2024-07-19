@@ -22,6 +22,7 @@ class BoutonRecommencer (Bouton):
     def action(self):
         super().action
 
+# Creee un bouton pour recommencer le jeu (x,y) pour la position
 class BoutonQuitter (Bouton):
     def __init__(self, x, y):
         super().__init__(self, x, y, 200, 400, (255, 255, 255), "Quitter", 36)

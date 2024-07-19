@@ -36,7 +36,7 @@ jeu = Jeu(NOMBRE_VIES_INITIALES)
 #Balle
 BALLE_POSITION_INITIALE = (200, 500)
 DIRECTION = pygame.math.Vector2(1, 1).normalize()
-VITESSE_BALLE = 12
+VITESSE_BALLE = 6
 balle = Balle(BALLE_POSITION_INITIALE[0], BALLE_POSITION_INITIALE[1], 5, ROUGE, DIRECTION, 0, LARGEUR, HAUTEUR)
 
 # Raquette
@@ -101,7 +101,7 @@ while running:
                     
 
     # Traiter les touches enfoncées
-    raquette.bougerRaquette(touche_gauche_enfoncee, touche_droite_enfoncee, LARGEUR)
+    raquette.bouger_raquette(touche_gauche_enfoncee, touche_droite_enfoncee, LARGEUR)
 
     # On regarde si ça touche une brique ou la raquette
     for brique in ensemble_briques:
@@ -117,11 +117,11 @@ while running:
 
 
 
- #       if ensemble_briques.empty:
- #           jeu.niveauSuivant()
+ #   if ensemble_briques.empty:
+ #       jeu.niveauSuivant()
 
     if balle.rect.colliderect(raquette.raquette):
-        balle.direction = raquette.rebondRaquette(balle)
+        balle.direction = raquette.rebond_raquette(balle)
 
     # Bouger la balle
     balle.deplacement()
@@ -130,10 +130,11 @@ while running:
     fenetre.fill(NOIR)
 
     # Gèrer la sortie de terrain
-#    if balle.y > HAUTEUR :
-#        if jeu.perdsVie:
-#            boutons.add(BoutonRecommencer(200, 400))
-#            boutons.add(BoutonQuitter(200, 800))
+    if balle.y > HAUTEUR :
+        jeu.perds_vie();
+        if jeu.getVie():
+            boutons.add(BoutonRecommencer(200, 400))
+            boutons.add(BoutonQuitter(200, 800))
 
 
     # Afficher les bordures, la raquette et la balle

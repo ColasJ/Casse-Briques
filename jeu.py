@@ -6,18 +6,17 @@ class Jeu :
         self.vies = vies
         self.niveau = 0
 
-    def levelUp (self):
+    def level_up (self):
         self.niveau += 1
 
-    def perdsVie (self, fenetre): 
+    def perds_vie (self, fenetre): 
         self.vies -= 1  
-        if self.vies == 0:
-            return True
-        else:
-            return False
+        
+    def get_vies (self):
+        return self.vies
  
-    def afficherVies (self, fenetre, police):   
+    def afficher_vies (self, fenetre, police):   
         fenetre.blit(police.render("Vies : " + str(self.vies), True, (255, 255, 255)), (10, 10))
 
-    def afficherNiveau (self, fenetre, police):   
+    def afficher_niveau (self, fenetre, police):   
         fenetre.blit(police.render("Niveau : " + str(self.niveau), True, (255, 255, 255)), (100, 10))

@@ -12,13 +12,13 @@ class Raquette(pygame.sprite.Sprite):
         self.couleur = couleur
         self.vitesse = 10
 
-    def setTaille (self, largeur):
+    def set_taille (self, largeur):
         self.size = largeur
 
-    def setVitesse (self, vitesse):
+    def set_vitesse (self, vitesse):
         self.vitesse = vitesse
 
-    def rebondRaquette(self, balle):
+    def rebond_raquette(self, balle):
         x_relatif = (balle.rect.centerx - self.raquette.left) - self.raquette.width / 2
         ratio = x_relatif / (self.raquette.width / 2)
         bounce_angle = ratio * ANGLE_MAX
@@ -26,10 +26,11 @@ class Raquette(pygame.sprite.Sprite):
             bounce_angle = 20
 
         # Calculer la nouvelle direction de la ballee
+        # A REDEFINIR
         return pygame.math.Vector2(math.cos(math.radians(bounce_angle)), -math.sin(math.radians(bounce_angle))).normalize()
     
     # Deplacement de la raquette du joueur
-    def bougerRaquette (self, gauche, droite, largeur_ecran) :
+    def bouger_raquette (self, gauche, droite, largeur_ecran) :
         if gauche:
             if not self.raquette.left <= 0:
                 self.raquette.x -= self.vitesse

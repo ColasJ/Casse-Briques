@@ -1,4 +1,3 @@
-import pygame
 
 class Jeu :
 
@@ -9,7 +8,7 @@ class Jeu :
     def level_up (self):
         self.niveau += 1
 
-    def perds_vie (self, fenetre): 
+    def perds_vie (self): 
         self.vies -= 1  
         
     def get_vies (self):

@@ -18,19 +18,18 @@ class Brique(pygame.sprite.Sprite):
     def __init__(self, positionX, positionY, largeur, hauteur, nbVies):
         super().__init__()
         self.nbVies = nbVies
-        self.image = pygame.Surface((largeur, hauteur))
-        self.image.fill(ORDRE_COULEURS[nbVies + 1])
-        self.rect = self.image.get_rect(topleft=(positionX, positionY)) 
+        self.surface = pygame.Surface((largeur, hauteur))
+        self.surface.fill(ORDRE_COULEURS[nbVies + 1])
+        self.rectangle = self.surface.get_rect(topleft=(positionX, positionY))
+        self.couleur = ORDRE_COULEURS[self.nbVies - 1]
     
     def touche(self):
         self.nbVies -= 1
+        self.couleur = ORDRE_COULEURS[self.nbVies - 1]
 
     def detruit(self):
         if self.nbVies <= 0:
             return True
-        
-    def couleur(self):
-        self.image.fill(ORDRE_COULEURS[self.nbVies + 1])
     
     def afficher(self, fenetre):
-        pygame.draw.rect(fenetre, self.couleur, self.rect)
+        pygame.draw.rect(fenetre, self.couleur, self.rectangle)

@@ -8,6 +8,25 @@ from bordure import Bordure
 from bouton import Bouton, BoutonRecommencer, BoutonQuitter
 
 
+def generation_briques(nombre_largeur, nombre_hauteur):
+    # Génération des briques (un gros rectangle pour le moment)
+    LARGEUR_BRIQUE_0 = 58
+    HAUTEUR_BRIQUE_0 = 20
+    
+    ALIGNEMENT_GAUCHE = 250
+    ALIGNEMENT_HAUT = 150
+
+    ensemble_briques = pygame.sprite.Group()
+
+    for i in range(nombre_largeur) :
+        for j in range(nombre_hauteur) :
+            brique = Brique(ALIGNEMENT_GAUCHE + (i * 60), ALIGNEMENT_HAUT + (j * 30), LARGEUR_BRIQUE_0, HAUTEUR_BRIQUE_0, 1)
+            ensemble_briques.add(brique)
+    
+    return ensemble_briques
+
+
+
 # Initialisation de Pygame
 pygame.init()
 police = pygame.font.SysFont(None, 36)
@@ -17,6 +36,14 @@ police_fin = pygame.font.SysFont(None, 100)
 LARGEUR = 1200
 HAUTEUR = 800
 FPS = 60
+
+# Création de la fenêtre
+fenetre = pygame.display.set_mode((LARGEUR, HAUTEUR))
+pygame.display.set_caption("Casse-Brique")
+clock = pygame.time.Clock()
+
+# Image de fond
+img = pygame.image.load('image_fond.jpg').convert()
 
 # Couleurs
 NOIR = (0, 0, 0)
@@ -45,27 +72,10 @@ RAQUETTE_LARGEUR_INITIALE = 100
 RAQUETTE_EPAISSEUR_INITIALE = 10
 raquette = Raquette(RAQUETTE_POSITION_INITIALE[0], RAQUETTE_POSITION_INITIALE[1], RAQUETTE_LARGEUR_INITIALE, RAQUETTE_EPAISSEUR_INITIALE, BLANC)
 
-# Génération des briques (un seul niveau simple pour le moment)
-LARGEUR_BRIQUE_0 = 58
-HAUTEUR_BRIQUE_0 = 20
-ensemble_briques = pygame.sprite.Group()
-ALIGNEMENT_GAUCHE = 250
-ALIGNEMENT_HAUT = 150
-
-for i in range(10) :
-    for j in range(5) :
-        brique = Brique(ALIGNEMENT_GAUCHE + (i * 60), ALIGNEMENT_HAUT + (j * 30), LARGEUR_BRIQUE_0, HAUTEUR_BRIQUE_0, 1)
-        ensemble_briques.add(brique)
-
 
 # Touches enfoncées ou non
 touche_gauche_enfoncee = False
 touche_droite_enfoncee = False
-
-# Création de la fenêtre
-fenetre = pygame.display.set_mode((LARGEUR, HAUTEUR))
-pygame.display.set_caption("Casse-Brique")
-clock = pygame.time.Clock()
 
 # Gestions des boutons (pour recommencer par exemple)
 boutons = []
@@ -73,10 +83,14 @@ boutons = []
 # Pour lancer la balle
 debut = True
 
+# On crée notre amas de briques
+ensemble_briques = generation_briques(10, 5)
+
 # Boucle principale du jeu
 running = True
 while running:
-    # Gestion des événements
+
+    # Gestion des événements (bouger raquette)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -103,7 +117,7 @@ while running:
     # Traiter les touches enfoncées
     raquette.bouger_raquette(touche_gauche_enfoncee, touche_droite_enfoncee, LARGEUR)
 
-    # On regarde si ça touche une brique ou la raquette
+    # Test des collisions avec les briques
     for brique in ensemble_briques:
         if balle.rect.colliderect(brique.rect):
             if balle.rect.left <= brique.rect.right and balle.rect.right >= brique.rect.left:
@@ -115,11 +129,10 @@ while running:
             if brique.detruit():
                 ensemble_briques.remove(brique)
 
-
-
  #   if ensemble_briques.empty:
  #       jeu.niveauSuivant()
 
+    # Test des collisions avec les raquettes
     if balle.rect.colliderect(raquette.raquette):
         balle.direction = raquette.rebond_raquette(balle)
 
@@ -127,11 +140,12 @@ while running:
     balle.deplacement()
 
     # Effacer l'écran avec la couleur de fond
-    fenetre.fill(NOIR)
+    # fenetre.fill(NOIR)
+    fenetre.blit(img, (0, 0))
 
     # Gèrer la sortie de terrain
     if balle.y > HAUTEUR :
-        jeu.perds_vie();
+        jeu.perds_vie()
         if jeu.getVie():
             boutons.add(BoutonRecommencer(200, 400))
             boutons.add(BoutonQuitter(200, 800))
@@ -148,7 +162,6 @@ while running:
     pygame.display.flip()
     clock.tick(FPS)
 
-    #PROUT
 
 # Quitter Pygame
 pygame.quit()

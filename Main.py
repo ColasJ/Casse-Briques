@@ -37,13 +37,13 @@ LARGEUR_BRIQUE_0 = 59
 HAUTEUR_BRIQUE_0 = 29
     
 #Balle
-VITESSE_BALLE = 6
+VITESSE_BALLE = 10
 RAYON_BALLE = 8
 
 
 ###########################################################################
 
- # Générateur simplifié de briques
+# Générateur simple de briques
 def generation_briques(nombre_largeur, nombre_hauteur):
     alignement_gauche = 250
     alignement_haut = 150    
@@ -52,7 +52,7 @@ def generation_briques(nombre_largeur, nombre_hauteur):
 
     for i in range(nombre_largeur) :
         for j in range(nombre_hauteur) :
-            brique = Brique(alignement_gauche + (i * 60), alignement_haut + (j * 30), LARGEUR_BRIQUE_0, HAUTEUR_BRIQUE_0, 1)
+            brique = Brique(alignement_gauche + (i * 60), alignement_haut + (j * 30), LARGEUR_BRIQUE_0, HAUTEUR_BRIQUE_0, 2)
             briques.add(brique)
     
     return briques
@@ -97,7 +97,7 @@ clock = pygame.time.Clock()
 
 # Chargement des images
 img_fond = charger_image('image_fond.jpg')
-img_balle = charger_image('balle.png')
+img_balle = charger_image('balle_blanche.png')
 img_balle = pygame.transform.scale(img_balle, (RAYON_BALLE * 2, RAYON_BALLE * 2))
 
 # Informations générales du jeu

@@ -8,6 +8,7 @@ class Raquette(pygame.sprite.Sprite):
     def __init__(self, x : int, y : int, largeur : int, epaisseur : int, couleur):
         super().__init__()
         self.largeur = largeur
+        self.epaisseur = epaisseur
         self.surface = pygame.Surface((largeur, epaisseur))
         self.rectangle = self.surface.get_rect()
         self.couleur = couleur
@@ -21,6 +22,18 @@ class Raquette(pygame.sprite.Sprite):
 
     def set_vitesse (self, vitesse):
         self.vitesse = vitesse
+
+    # Definit quelle zone a été touchée (gauche, centre ou droite de la raquette)
+    # Les trois zones occupent chacune 1/3 de la raquette
+    def zone_contact (self, balle):
+        normalise = 100 * (balle.rectangle.centerx - self.rectangle.left) / (self.rectangle.width)
+        if normalise < 33 :
+            return -1
+        if normalise > 66 :
+            return 1
+        return 0
+        
+        
     
     # Deplacement de la raquette du joueur
     def bouger_raquette (self, gauche, droite, largeur_ecran) :
